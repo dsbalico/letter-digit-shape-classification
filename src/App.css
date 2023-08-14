@@ -1,0 +1,40 @@
+@keyframes loading {
+
+    0%,
+    100% {
+        transform: scaleX(0);
+    }
+
+    50% {
+        transform: scaleX(1);
+    }
+}
+
+.animate-loading {
+    animation: loading 1.5s infinite;
+}
+
+
+.bg-stripes {
+    background: repeating-linear-gradient(45deg,
+            #f9fafb,
+            #f9fafb 10px,
+            #f3f4f6 10px,
+            #f3f4f6 20px);
+}
+
+.bg-stripes-red {
+    background: repeating-linear-gradient(45deg,
+            #fecaca,
+            #fecaca 10px,
+            #fca5a5 10px,
+            #fca5a5 20px);
+}
+
+.bg-stripes-sky {
+    background: repeating-linear-gradient(45deg,
+            #bae6fd,
+            #bae6fd 10px,
+            #7dd3fc 10px,
+            #7dd3fc 20px);
+}
