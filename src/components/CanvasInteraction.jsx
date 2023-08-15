@@ -63,7 +63,7 @@ function Classifier({
                 <input
                     type='range'
                     min='2'
-                    max='20'
+                    max='16'
                     value={brushSize}
                     onChange={(e) => setBrushSize(e.target.value)}
                     className='w-full' />
