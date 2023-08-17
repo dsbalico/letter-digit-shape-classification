@@ -17,8 +17,26 @@ export const mergedMapping = (inputValue) => {
     return asciiCodes[inputValue];
 };
 
+export const shapeMapping = (inputValue) => {
+    const mapping = {
+        '0': 'Circle',
+        '1': 'Diamond',
+        '2': 'Heart',
+        '3': 'Moon',
+        '4': 'Oval',
+        '5': 'Parallelogram',
+        '6': 'Rectangle',
+        '7': 'Square',
+        '8': 'Star',
+        '9': 'Trapezoid',
+        '10': 'Triangle'
+    };
+
+    return mapping[inputValue];
+};
+
 // Preprocess an image for model input
-export const preprocessImage = (image) => {
+export const preprocessImage = (image, rotate) => {
     const targetSize = [28, 28];
 
     // Resize the image
@@ -27,11 +45,16 @@ export const preprocessImage = (image) => {
     // Invert the colors and normalize
     const invertedImage = resizedImage.mul(tf.scalar(-1)).add(tf.scalar(255)).div(tf.scalar(255));
 
-    // Rotate the image by transposing
-    const rotatedImage = invertedImage.transpose([1, 0, 2]);
+    let transformedImage = invertedImage;
+
+    if (rotate) {
+        // Rotate the image by transposing
+        transformedImage = invertedImage.transpose([1, 0, 2]);
+    }
 
     // Reshape the image for model input
-    const normalizedImage = rotatedImage.reshape([1, ...targetSize, 1]);
+    const normalizedImage = transformedImage.reshape([1, ...targetSize, 1]);
 
     return normalizedImage;
 };
+

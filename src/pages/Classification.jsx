@@ -5,7 +5,7 @@ import { GrTest } from 'react-icons/gr';
 import { BiSolidErrorCircle } from 'react-icons/bi';
 import CanvasInteraction from '../components/CanvasInteraction';
 import { SiGooglecolab } from 'react-icons/si';
-import { digitMapping, letterMapping, mergedMapping, preprocessImage } from './../helper_functions';
+import { digitMapping, letterMapping, mergedMapping, preprocessImage, shapeMapping } from './../helper_functions';
 import Toast from './../components/Toast';
 
 function Classification() {
@@ -18,7 +18,7 @@ function Classification() {
     });
     const [letterModel, setLetterModel] = useState(null);
     const [digitModel, setDigitModel] = useState(null);
-    // const [shapeModel, setShapeModel] = useState(null);
+    const [shapeModel, setShapeModel] = useState(null);
     const [mergedModel, setMergedModel] = useState(null);
 
     // State for loading indicators and errors
@@ -52,7 +52,7 @@ function Classification() {
 
         loadModel("letter/model.json", setLetterModel);
         loadModel("digit/model.json", setDigitModel);
-        // loadModel("shape/model.json", setShapeModel);
+        loadModel("shape/model.json", setShapeModel);
         loadModel("merged/model.json", setMergedModel);
     }, []);
 
@@ -66,36 +66,48 @@ function Classification() {
                 canvas: refs.letter.current,
                 model: letterModel,
                 mappingFunction: (predictedClass) => String.fromCharCode(letterMapping(predictedClass - 1)),
-                resultStateUpdater: (letter) => setResults({ ...results, letter })
+                resultStateUpdater: (letter) => setResults({ ...results, letter }),
+                rotate: true,
             },
             'digit': {
                 canvas: refs.digit.current,
                 model: digitModel,
                 mappingFunction: (predictedClass) => String.fromCharCode(digitMapping(predictedClass)),
                 resultStateUpdater: (digit) => setResults({ ...results, digit })
+                ,
+                rotate: true,
             },
             'merged': {
                 canvas: refs.merged.current,
                 model: mergedModel,
                 mappingFunction: (predictedClass) => String.fromCharCode(mergedMapping(predictedClass)),
-                resultStateUpdater: (merged) => setResults({ ...results, merged })
+                resultStateUpdater: (merged) => setResults({ ...results, merged }),
+                rotate: true,
+            },
+            'shape': {
+                canvas: refs.shape.current,
+                model: shapeModel,
+                mappingFunction: (predictedClass) => shapeMapping(predictedClass),
+                resultStateUpdater: (shape) => setResults({ ...results, shape }),
+                rotate: false,
             }
         };
 
         // Delay the prediction to avoid overwhelming the UI.
         setTimeout(async () => {
             const categoryMapping = categoryMappings[category];
-            const { canvas, model, mappingFunction, resultStateUpdater } = categoryMapping;
+            const { canvas, model, mappingFunction, resultStateUpdater, rotate } = categoryMapping;
 
             const context = canvas.getContext('2d', { willReadFrequently: true });
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
             const inputTensor = tf.browser.fromPixels(imageData, 1);
-            const preprocessedTensor = preprocessImage(inputTensor);
+            const preprocessedTensor = preprocessImage(inputTensor, rotate);
 
             const predictions = await model.predict(preprocessedTensor);
             const predictedClass = predictions.argMax(1).dataSync()[0];
 
             const result = mappingFunction(predictedClass);
+
             resultStateUpdater(result);
 
             inputTensor.dispose();
@@ -148,12 +160,12 @@ function Classification() {
                             <CanvasInteraction
                                 key={3}
                                 title={"Shape"}
+                                accuracy={97.21}
                                 description={"See list of employed shapes"}
                                 result={results.shape}
                                 isLoading={isLoading.shape}
                                 canvasRef={refs.shape}
                                 submitFunction={predictDrawing}
-                                dev={true}
                             />
                         </div>
                     ) : (
